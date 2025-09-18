@@ -1,38 +1,59 @@
 <?php
-//Import PHPMailer classes into the global namespace
-//These must be at the top of your script, not inside a function
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Import PHPMailer classes
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-//Load Composer's autoloader (created by composer, not included with PHPMailer)
-require __DIR__  .  '/../../vendor/autoload.php';
+// Load Composer's autoloader
+require __DIR__  . '/../../vendor/autoload.php';
 
-//Create an instance; passing `true` enables exceptions
-$mail = new PHPMailer(true);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $userEmail = $_POST["email"] ?? '';
+    $userName  = $_POST["name"] ?? 'Friend'; // ✅ default if empty
 
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'bruce.mayiani@strathmore.edu';                     //SMTP username
-    $mail->Password   = 'fujo bxkm ldvu hclu';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+    // Validate email
+    if (!filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+        die("Invalid email address");
+    }
 
-    //Recipients
-    $mail->setFrom('bruce.mayiani@strathmore.edu', 'Bruce Mayiani');
-    $mail->addAddress('mayianibruce@gmail.com', 'Klein Moreti');     //Add a recipient
+    // Create instance
+    $mail = new PHPMailer(true);
 
-    //Content
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'Efootball Camp';
-    $mail->Body    = 'Welcome to Efootbball Training Gameplay.';
+    try {
+        // Server settings
+        $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      
+        $mail->isSMTP();                                            
+        $mail->Host       = 'smtp.gmail.com';                      
+        $mail->SMTPAuth   = true;                                   
+        $mail->Username   = 'bruce.mayiani@strathmore.edu';        
+        $mail->Password   = 'fujo bxkm ldvu hclu'; // Gmail App Password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;           
+        $mail->Port       = 465;                                   
 
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        // Recipients
+        $mail->setFrom('bruce.mayiani@strathmore.edu', 'Bruce Mayiani');
+        $mail->addAddress($userEmail, $userName);     
+
+        // Content (✅ Personalized greeting)
+        $mail->isHTML(true);                                  
+        $mail->Subject = 'Efootball Camp';
+        $mail->Body    = "Hello <b>{$userName}</b>,<br><br>
+                          Welcome to Efootball Training Gameplay!<br>
+                          We’re excited to have you join us.";
+
+        $mail->send();
+        echo '✅ Message has been sent to ' . htmlspecialchars($userEmail);
+    } catch (Exception $e) {
+        echo "❌ Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    }
+} else {
+    // Simple form to collect name + email
+    echo "<form method='POST'>
+            <input type='text' name='name' placeholder='Enter your name' required><br><br>
+            <input type='email' name='email' placeholder='Enter your email' required><br><br>
+            <button type='submit'>Send Test Email</button>
+          </form>";
 }

@@ -1,0 +1,18 @@
+  Workflow
+
+1. Initialize Git in the project folder
+   git init
+
+2. Added a remote repository
+   git remote add origin https://github.com/bruce478/API-Project.git
+
+
+
+3. Add files to staging area
+   git add .
+
+4. Commit and Push  changes
+   commit message"Connection to db"
+
+
+   
